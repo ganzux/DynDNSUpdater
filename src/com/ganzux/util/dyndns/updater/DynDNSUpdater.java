@@ -12,8 +12,8 @@ import java.util.Properties;
 
 import javax.xml.bind.DatatypeConverter;
 
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DynDNSUpdater {
 
@@ -22,7 +22,6 @@ public class DynDNSUpdater {
 	///////////////////////////////////////////////////////////////
 
 	private DynDNSUpdater(){
-		PropertyConfigurator.configure("log4j.properties");
 		logger.info("New instance for DynDNSUpdater");
 
 		prop = new Properties();
@@ -46,7 +45,7 @@ public class DynDNSUpdater {
 			}
 
 		} catch (IOException ex) {
-			logger.error( ex );
+			logger.error( ex.getMessage() );
 		} finally {
 			if (input != null) {
 				try {
@@ -77,7 +76,7 @@ public class DynDNSUpdater {
 	///////////////////////////////////////////////////////////////
 	private Properties prop;
 	private List<String> uris;
-	private static Logger logger = Logger.getLogger( DynDNSUpdater.class.getName() );
+	private static Logger logger = LoggerFactory.getLogger( DynDNSUpdater.class );
 	///////////////////////////////////////////////////////////////
 	//                     End Of Atributes                      //
 	///////////////////////////////////////////////////////////////
@@ -121,17 +120,7 @@ public class DynDNSUpdater {
 		resetDynDNS( getPublicIP(), user, pass, path);
 	}
 
-	///////////////////////////////////////////////////////////////
-	//                    End of Public Methods                  //
-	///////////////////////////////////////////////////////////////
-
-
-
-	///////////////////////////////////////////////////////////////
-	//                      Private Methods                      //
-	///////////////////////////////////////////////////////////////
-
-	private String getPublicIP(){
+	public String getPublicIP(){
 		
 		try{
 			for ( String apiUrl:uris ){
@@ -146,6 +135,17 @@ public class DynDNSUpdater {
 		return null;
 
 	}
+	///////////////////////////////////////////////////////////////
+	//                    End of Public Methods                  //
+	///////////////////////////////////////////////////////////////
+
+
+
+	///////////////////////////////////////////////////////////////
+	//                      Private Methods                      //
+	///////////////////////////////////////////////////////////////
+
+	
 
 	///////////////////////////////////////////////////////////////
 	//                   End of Private Methods                  //
