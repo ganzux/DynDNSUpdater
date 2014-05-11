@@ -12,8 +12,8 @@ import java.util.Properties;
 
 import javax.xml.bind.DatatypeConverter;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 public class DynDNSUpdater {
 
@@ -22,30 +22,30 @@ public class DynDNSUpdater {
 	///////////////////////////////////////////////////////////////
 
 	private DynDNSUpdater(){
-		logger.info("New instance for DynDNSUpdater");
+//		logger.info("New instance for DynDNSUpdater");
 
 		prop = new Properties();
 		uris = new ArrayList<String>();
 		InputStream input = null;
 		 
 		try {
-			logger.info("Trying to read properties...");
+//			logger.info("Trying to read properties...");
 			input = this.getClass().getClassLoader().getResourceAsStream("resources/config.properties");
 
 			prop.load( input );
-			logger.info("properties readed");
+//			logger.info("properties readed");
 
 			String urls = prop.getProperty("url.apis");
 			if ( urls != null ){
-				logger.info("Reading URL");
+//				logger.info("Reading URL");
 				for ( String u:urls.split(",") ){
 					uris.add( u );
-					logger.info( u );
+//					logger.info( u );
 				}
 			}
 
 		} catch (IOException ex) {
-			logger.error( ex.getMessage() );
+//			logger.error( ex.getMessage() );
 		} finally {
 			if (input != null) {
 				try {
@@ -76,7 +76,7 @@ public class DynDNSUpdater {
 	///////////////////////////////////////////////////////////////
 	private Properties prop;
 	private List<String> uris;
-	private static Logger logger = LoggerFactory.getLogger( DynDNSUpdater.class );
+//	private static Logger logger = LoggerFactory.getLogger( DynDNSUpdater.class );
 	///////////////////////////////////////////////////////////////
 	//                     End Of Atributes                      //
 	///////////////////////////////////////////////////////////////
@@ -86,8 +86,11 @@ public class DynDNSUpdater {
 	//                       Public Methods                      //
 	///////////////////////////////////////////////////////////////
 
-	public void resetDynDNS( String nowPublicIP, String user, String pass, String path ){
+	public String[] resetDynDNS( String nowPublicIP, String user, String pass, String path ){
+		String[] reset = new String[3];
+		
 		try{
+			reset[0] = nowPublicIP;
 			String userpassword = user + ":" + pass;
 			String encodedAuthorization = DatatypeConverter.printBase64Binary(userpassword.getBytes());
 			 
@@ -100,13 +103,16 @@ public class DynDNSUpdater {
 			 
 			// Execute GET
 			int responseCode = connection.getResponseCode();
+			reset[1] = String.valueOf( responseCode );
 
 			// Print feedback
 			String line;
+			reset[2] = "";
 			InputStreamReader in = new InputStreamReader((InputStream) connection.getContent());
 			BufferedReader buff = new BufferedReader(in);
 			do {
 				line = buff.readLine();
+				reset[2] += line;
 			} while (line != null);
 
 			connection.disconnect();
@@ -114,10 +120,12 @@ public class DynDNSUpdater {
 		} catch (Exception ex) {
 			
 		}
+		
+		return reset;
 	}
 	
-	public void resetDynDNS( String user, String pass, String path ){
-		resetDynDNS( getPublicIP(), user, pass, path);
+	public String[] resetDynDNS( String user, String pass, String path ){
+		return resetDynDNS( getPublicIP(), user, pass, path);
 	}
 
 	public String getPublicIP(){
@@ -125,9 +133,13 @@ public class DynDNSUpdater {
 		try{
 			for ( String apiUrl:uris ){
 				URL myIP;
-				myIP = new URL( apiUrl );
-	            BufferedReader in = new BufferedReader(  new InputStreamReader(myIP.openStream()) );
-	            return in.readLine();
+				try{
+					myIP = new URL( apiUrl );
+					BufferedReader in = new BufferedReader(  new InputStreamReader(myIP.openStream()) );
+					return in.readLine();
+				} catch ( Exception e ){
+					
+				}
 			}
 		} catch ( Exception e ){
 			
